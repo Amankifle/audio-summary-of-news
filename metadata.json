@@ -1,0 +1,5 @@
+{
+  "name": "Audio News Summarizer",
+  "description": "An application that takes a news article and a personalization prompt to generate a custom audio summary using Gemini API, perfect for listening on the go.",
+  "requestFramePermissions": []
+}
