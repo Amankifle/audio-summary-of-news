@@ -7,18 +7,19 @@ if (!process.env.API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export async function generateSummary(article: string, persona: string): Promise<string> {
+export async function generateSummary(article: string, persona: string, language: string): Promise<string> {
     const model = 'gemini-2.5-flash';
-    
-    let prompt = `Please summarize the following news article.`;
+
+    // Include language in prompt
+    let prompt = `Please summarize the following news article in ${language}.`;
     if (persona.trim()) {
-        prompt = `Please summarize the following news article, with the personalization: "${persona}".`;
+        prompt += ` Personalize it: "${persona}".`;
     }
     prompt += `\n\nArticle:\n---\n${article}`;
 
     try {
         const response = await ai.models.generateContent({
-            model: model,
+            model,
             contents: prompt,
         });
 
@@ -29,18 +30,25 @@ export async function generateSummary(article: string, persona: string): Promise
     }
 }
 
-export async function generateSpeech(text: string): Promise<string> {
+export async function generateSpeech(text: string, language: string): Promise<string> {
     const model = 'gemini-2.5-flash-preview-tts';
-    
+
+    // Optional: you can map language to a specific voice
+    const voiceMap: Record<string, string> = {
+        en: 'Alloy',   // English voice
+        am: 'Kore',    // Amharic voice
+    };
+    const voiceName = voiceMap[language] || 'Alloy';
+
     try {
         const response = await ai.models.generateContent({
-            model: model,
-            contents: [{ parts: [{ text: text }] }],
+            model,
+            contents: [{ parts: [{ text }] }],
             config: {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
                     voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Kore' },
+                        prebuiltVoiceConfig: { voiceName },
                     },
                 },
             },
@@ -58,3 +66,4 @@ export async function generateSpeech(text: string): Promise<string> {
         throw new Error("Failed to communicate with the Gemini API for text-to-speech.");
     }
 }
+
